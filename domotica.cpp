@@ -15,7 +15,7 @@ void Domotica::init(int type){
 	
 	Serial.println(" ______________________________________________________");
 	Serial.println("|                                                      |");
-	Serial.println("| Home automation controller v0.1 (c) 2014 vermeers.ch |");
+	Serial.println("| Home automation controller v0.2 (c) 2014 vermeers.ch |");
 	Serial.println("|______________________________________________________|");
 	Serial.println("");
 	node = type;
@@ -124,14 +124,14 @@ bool Domotica::checkNewMsg(void) {
 	check = transmitter.check_ready();
 	if(check == 0) {
 		if(debug) {
-			Serial.println("[DEBUG] no new message ready: ");
+			//Serial.println("[DEBUG] no new message ready: ");
 			//Serial.println(check);
 		}
 		return false;
 	}
 	else {
 	 	if(debug) {
-			Serial.println("[DEBUG] new message");
+			//Serial.println("[DEBUG] new message");
 			//Serial.print(check);
 		}
 		return true;	
