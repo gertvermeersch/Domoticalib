@@ -89,13 +89,13 @@ bool Domotica::sendToNode(char* address, char*buffer) {
  	Serial.print("\n\r");
  	Serial.print("[DEBUG] Packet to be sent: ");
  	for(int i = 0; i<32; i++) {
- 		Serial.print(nrf905tx_buffer[i],HEX);
+ 		Serial.print(nrf905tx_buffer[i],DEC);
  		Serial.print(' ');
  	}
  	Serial.print("\n\r");
  }
  int retries = 10;
- transmitter.TX(buffer, address);
+ transmitter.TX(nrf905tx_buffer, address);
  if(debug) Serial.println("[DEBUG] Packet transmitted");
  do {
   	transmitter.set_rx();
@@ -140,21 +140,18 @@ bool Domotica::checkNewMsg(void) {
 }
 
 char* Domotica::getMsg(void) {
-	char nrf905tx_buffer[MSG_LEN] = {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	char nrf905tx_buffer[MSG_LEN] = {0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	char ack_addr[4];
 	if(checkNewMsg()) {
 		transmitter.RX(nrf905rx_buffer);
 		//ACK the packet
-		Serial.print("ACK ADDRESS: ");
+		if(debug) Serial.print("ACK ADDRESS: ");
 		for(int i = 0; i<4; i++) {
 			ack_addr[i] = nrf905rx_buffer[i];
-		ack_addr[0] = 0x00;
-		ack_addr[1] = 0x00;
-		ack_addr[2] = 0x00;
-		ack_addr[3] = 0x01;
-		Serial.print(ack_addr[i], HEX);
+			nrf905tx_buffer[i] = nrf905rx_buffer[i];
+			if(debug) Serial.print(ack_addr[i], DEC);
 		}
-		Serial.print("\n\r");
+		if(debug)Serial.print("\n\r");
 		
 		transmitter.TX(nrf905tx_buffer, ack_addr); //first 4 bytes of rx_buffer is the source address
 		transmitter.set_rx();
