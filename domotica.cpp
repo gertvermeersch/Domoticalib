@@ -149,11 +149,15 @@ char* Domotica::getMsg(void) {
 		for(int i = 0; i<4; i++) {
 			ack_addr[i] = nrf905rx_buffer[i];
 			nrf905tx_buffer[i] = nrf905rx_buffer[i];
-			if(debug) Serial.print(ack_addr[i], DEC);
+			if(debug) {
+				Serial.print(ack_addr[i], DEC);
+				Serial.print(" ");
+			}
 		}
 		if(debug)Serial.print("\n\r");
-		
-		transmitter.TX(nrf905tx_buffer, ack_addr); //first 4 bytes of rx_buffer is the source address
+		for(int i = 0; i < 10; i++) {
+			transmitter.TX(nrf905tx_buffer, ack_addr); //first 4 bytes of rx_buffer is the source address
+		}
 		transmitter.set_rx();
 	}
 	return nrf905rx_buffer;
