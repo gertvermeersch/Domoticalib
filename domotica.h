@@ -32,8 +32,8 @@ class Domotica {
 		bool checkNewMsg(void);
 		char* getMsg(void);
 		void setDebug(bool);
-		bool sendToNode(int, char*);
-		bool sendToNode(char*, char*buffer);
+		void sendToNode(int, char*);
+		void sendToNode(char*, char*buffer);
 		
 				
 	private:
