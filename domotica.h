@@ -33,11 +33,11 @@ class Domotica {
 		char* getMsg(void);
 		void setDebug(bool);
 		void sendToNode(int, char*);
-		void sendToNode(char*, char*buffer);
+		void sendToAddress(char*, char*buffer);
 		
 				
 	private:
-		int node;
+		int my_node;
 		//char tx_buf[BUF_LEN];
 		char rx_buf[BUF_LEN];
 		char read_config_buf[CONF_LEN];

@@ -1,8 +1,8 @@
 #include <domotica.h>
 
-char addresses[4][4] = { {0x66,0x66,0x66,0x66},
+char addresses[4][4] = { {0x66,0x66,0x66,0x66}, // ffff
 							{0x77,0x77,0x77,0x77},
-							{0x99,0x99,0x99,0x99},
+							{0x70,0x70,0x70,0x70},
 							{0x00,0x00,0x00,0x04}};
 							
 char nrf905tx_buffer[BUF_LEN] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -11,21 +11,20 @@ Domotica::Domotica() {
 	
 }
 
-void Domotica::init(int type){	
+void Domotica::init(int node){	
+	my_node = node;
+	if(debug) {
+		Serial.println(" ______________________________________________________");
+		Serial.println("|                                                      |");
+		Serial.println("| Home automation controller v1 by Gert Vermeersch     |");
+		Serial.println("|______________________________________________________|");
+		Serial.println("");
+	}
 	
-	Serial.println(" ______________________________________________________");
-	Serial.println("|                                                      |");
-	Serial.println("| Home automation controller v0.2 (c) 2014 vermeers.ch |");
-	Serial.println("|______________________________________________________|");
-	Serial.println("");
-	node = type;
-	if(node == 0)
-		transmitter = NRF905(5,4,3,10,9,2,7); //different mapping
-	else
 		transmitter = NRF905();
-	//pinMode(NRF905_CSN,OUTPUT);
+
 	transmitter.init();
-	transmitter.write_config_address(addresses[node]);
+	transmitter.write_config_address(addresses[my_node]);
 	transmitter.read_config(read_config_buf);
 	//if debug is on echo the config register
 	if(debug) {
@@ -35,8 +34,8 @@ void Domotica::init(int type){
         	Serial.print(' ');
         }
     	Serial.print("\r\n");
-    	if(node == 0)
-    		Serial.println("[INFO] Now accepting commands from UART");
+    	if(my_node == 0)
+    		Serial.println("[INFO] Now accepting commands from UART (I am master)");
     }
     transmitter.set_rx();
 	
@@ -70,14 +69,15 @@ void Domotica::setDebug(bool flag) {
 		debug = true;
 	}
 	else {
-		Serial.println("[INFO] Debugging disabled");
+		//say nothing!
 		debug = false;
 	}
 }
 
-void Domotica::sendToNode(char* address, char*buffer) {
+void Domotica::sendToAddress(char* address, char*buffer) {
+	
 	 for(int i = 0; i<4; i++)
- 	nrf905tx_buffer[i] = addresses[node][i]; //add the source address to the packet
+ 	nrf905tx_buffer[i] = addresses[my_node][i]; //add the source address to the packet
  for(int i = 0; i<MSG_LEN; i++)
  	nrf905tx_buffer[i+4] = buffer[i];	//add the message to the packet
  if(debug) { // only when debug is on
@@ -101,7 +101,7 @@ void Domotica::sendToNode(char* address, char*buffer) {
 }
 
 void Domotica::sendToNode(int tx_node, char* buffer) {
-	sendToNode(addresses[tx_node], buffer);
+	sendToAddress(addresses[tx_node], buffer);
 }
 
 bool Domotica::checkNewMsg(void) {
@@ -126,25 +126,11 @@ bool Domotica::checkNewMsg(void) {
 }
 
 char* Domotica::getMsg(void) {
-	//char nrf905tx_buffer[MSG_LEN] = {0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	//char ack_addr[4];
+	for(int i =  0; i < MSG_LEN; i++) {
+		nrf905rx_buffer[i] = '0';
+	}
 	if(checkNewMsg()) {
 		transmitter.RX(nrf905rx_buffer);
-		//ACK the packet
-		/* if(debug) Serial.print("ACK ADDRESS: ");
-		for(int i = 0; i<4; i++) {
-			ack_addr[i] = nrf905rx_buffer[i];
-			nrf905tx_buffer[i] = nrf905rx_buffer[i];
-			if(debug) {
-				Serial.print(ack_addr[i], DEC);
-				Serial.print(" ");
-			}
-		}
-		if(debug)Serial.print("\n\r");
-		for(int i = 0; i < 10; i++) {
-			transmitter.TX(nrf905tx_buffer, ack_addr); //first 4 bytes of rx_buffer is the source address
-		}
-		transmitter.set_rx(); */
 	}
 	return nrf905rx_buffer;
 }
